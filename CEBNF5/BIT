@@ -1,0 +1,16 @@
+INPUT = <LINE>, /endCode/;
+LINE = LINE_NUMBER, 'CODE', 'READ' | PRINT_STATEMENT | ASSIGNMENT, GOTO | /noGoTo/, /makeLine/;
+LINE_NUMBER = 'LINE', 'NUMBER', {BIT}, /makeLineNumber/;
+BIT = 'ONE' | 'ZERO';
+PRINT_STATEMENT = 'PRINT', BIT, /makePrint/;
+ASSIGNMENT = (/value/, VARIABLE | VALUE_OF, 'EQUALS', ({BIT}, /multiBit/) | EXPRESSION)
+				| (/address/, VARIABLE | VALUE_OF, 'EQUALS', ADDRESS_OF), /makeAssignment/;
+VARIABLE = (/start/, 'VARIABLE', {BIT}, /makeVariable/) | (_JUMPREG, /jumpReg/);
+_JUMPREG = 'THE', 'JUMP', 'REGISTER';
+VALUE_OF = 'THE', 'VALUE', ('AT' | 'BEYOND')@a, ADDRESS_OF | VARIABLE, /makeValue&a/;
+ADDRESS_OF = 'THE', 'ADDRESS', 'OF', VALUE_OF | VARIABLE, /makeAddress/;
+EXPRESSION = INNER, <'NAND', INNER, /makeNand/>;
+INNER = ('OPEN', 'PARENTHESIS', EXPRESSION, 'CLOSE', 'PARENTHESIS') | BIT | VARIABLE | VALUE_OF;
+GOTO = /start/, 'GOTO', GOTO_VARIABLE, (IF, BIT, /splitGoto/, /start/, 'GOTO', GOTO_VARIABLE, IF, BIT, /splitGoto/) | /goto/;
+GOTO_VARIABLE = {BIT} | (VARIABLE, /gotoVar/);
+IF = 'IF', _JUMPREG, 'IS', 'EQUAL', 'TO';

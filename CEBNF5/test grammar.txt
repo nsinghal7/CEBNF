@@ -1,0 +1,5 @@
+INPUT = <EXPRESSION, ';'>;
+EXPRESSION = TERM, <('+' | '-')@a, TERM, /&a/>;
+TERM = FACTOR, <('*' | '/')@b, FACTOR, /&b/>;
+FACTOR = INNER, <'^', INNER>@c, /#c/, /^/;
+INNER = (['-']@d, #DECIMAL, /#d/, /n/) | ( '(', EXPRESSION, ')' );

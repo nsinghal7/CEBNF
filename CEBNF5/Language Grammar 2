@@ -1,0 +1,87 @@
+INPUT = <IMPORT_STATEMENT>, /noteEndImportSection/, <GENERAL_STATEMENT>, /noteEndFile/;
+IMPORT_STATEMENT = 'import', $RELATIVE_FILENAME, ('AS', _DOTTED_ID) | //, /makeImport/;
+_DOTTED_ID = /start/, $ID, <'.', $ID>, /makeDottedId/;
+GENERAL_STATEMENT = METHOD_DEFINITION | CLASS_DEFINITION | KEY_STATEMENT | DEF_STATEMENT
+													| (EXPRESSION, ';', /runClearReturn/);
+METHOD_DEFINITION = PRIVACY_MODIFIER, CLASS_MODIFIER, FINAL_MODIFIER, TYPE_LIST, $ID, GENERIC_DECLARATION,
+				PARAMETER_LIST, _THROWS, (METHOD_BODY, /makeMethodDefinition/) | (';', /makeMethodDeclaration/);
+TYPE_LIST = /start/, TYPE, <',', TYPE>, /makeTypeList/;
+PRIVACY_MODIFIER = 'private' | 'public' | 'local' | (#INTEGER@a, /private&a/) | /local/);
+CLASS_MODIFIER = 'static' | /objective/;
+FINAL_MODIFIER = 'final' | 'abstract' | /changing/;
+GENERIC_DECLARATION = ('<', /start/, _GENERIC_PARAM_DECLARATION, <',', _GENERIC_PARAM_DECLARATION>,
+						/makeGenericDeclaration/, '>') | //;
+_GENERIC_PARAM_DECLARATION = $ID, EXTENSION, /genericParam/;
+EXTENSION = ('extends', /start/, TYPE, <'|', TYPE>, /makeExtension/) | //;
+PARAMETER_LIST = '(', /start/, [_PARAMETER, <,', _PARAMETER>], /makeParamList/, ')';
+_PARAMETER = FINAL_MODIFIER, TYPE, $ID, '...' | //, /makeParameter/;
+_THROWS = 'throws', TYPE, /throw/;
+METHOD_BODY = '{', /start/, <GENERAL_STATEMENT>, /makeMethodBody/, '}';
+CLASS_DEFINITION = PRIVACY_MODIFIER, FINAL_MODIFIER, $ID, GENERIC_DECLARATION, EXTENSION, METHOD_BODY,
+					/makeClassDefinition/;
+ENUM_LIST_DECLARATION = ('enums', ':', ENUM_DECLARATION, <',', ENUM_DECLARATION, ';', /endEnums/) | //;
+ENUM_DECLARATION = $ID, ('=', EXPRESSION, /makeEnumValueDeclaration/) | /makeEnumDeclaration/;
+KEY_STATEMENT = _SIMPLE_KEY_STATEMENT | _RETURN | _SWITCH | _IF | _TRY | _DO | _WHILE | _FOR | _SECTION;
+_SIMPLE_KEY_STATEMENT = _SIMPLE_KEY_WORD@a, EXPRESSION, /statement&a/, ';';
+_SIMPLE_KEY_WORD = 'break' | 'continue' | 'assert' | 'throw';
+_RETURN = 'return', /start/, EXPRESSION, <',', EXPRESSION>, /makeReturn/, ';';
+_SWITCH = 'switch', PARENED_EXPRESSION, _SWITCH_BODY, /makeSwitch/;
+PARENED_EXPRESSION = '(', EXPRESSION, ')';
+_SWITCH_BODY = '{', /start/, <_CASE_STATEMENT>, [_DEFAULT_STATEMENT], /makeSwitchBody/, '}';
+_CASE_STATEMENT = 'case', EXPRESSION, ':', /start/, <GENERAL_STATEMENT, /makeCase/;
+_DEFAULT_STATEMENT = 'default', ':', /start/, <GENERAL_STATEMENT>, /makeDefaultCase/;
+_IF = 'if', PARENED_EXPRESSION, METHOD_BODY, ('else', _IF | METHOD_BODY) | //, /makeIf/;
+_TRY = 'try', /start/, METHOD_BODY, {'catch', '(', _PARAMETER, ')', METHOD_BODY, /makeCatch/},
+			('finally', METHOD_BODY) | //, /makeTry/;
+_DO = 'do', METHOD_BODY, 'while', PARENED_EXPRESSION, ';', /makeDo/;
+_WHILE = 'while', PARENED_EXPRESSION, METHOD_BODY, /makeWhile/;
+_FOR = 'for', '(', DEF_STATEMENT | EXPRESSION, ';', EXPRESSION, ';', EXPRESSION, ')', METHOD_BODY, /makeFor/;
+_SECTION = 'section', METHOD_BODY, /makeSection/;
+
+
+
+
+
+DEF_STATEMENT = PRIVACY_MODIFIER, CLASS_MODIFIER, FINAL_MODIFIER, TYPE, /start/, $ID, <',', $ID>, /makeIdList/,
+				'=', EXPRESSION, /makeDefStatement/, ';';
+TYPE = /start/, _NON_ARRAY_TYPE, <'[', ']'>, /makeArrayType/;
+_NON_ARRAY_TYPE = _NON_GENERIC_TYPE, _GENERIC_TYPE_MODIFIER, /makeNonArrayType/;
+_GENERIC_TYPE_MODIFIER = /start/, ('<', _UNKNOWN_TYPE, <',', _UNKNOWN_TYPE>, '>') | //, /makeGenericTypeMod/;
+_UNKNOWN_TYPE = TYPE | '?';
+_NON_GENERIC_TYPE = _DOTTED_ID | _EXPRESSION_TYPE;
+_EXPRESSION_TYPE = '<:', EXPRESSION, ':>', /makeExpressionType/;
+_NUMBER = /start/, (#INTEGER, ['b' | 'i' | 'l']) | (#DECIMAL, ['f', 'd']), /makeNumber/;
+EXPRESSION = TERNARY_EXPRESSION_LIST, [_ASSINGMENT_OPERATOR@a, EXPRESSION, /makeAssignment&a/];
+_ASSIGNMENT_OPERATOR = '=' | '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '^=' | '|=' | '<<=' | '>>=' | '>>>=';
+TERNARY_EXPRESSION_LIST = /start/, TERNARY_EXPRESSION, <',', TERNARY_EXPRESSION>, /makeTernaryExpressionList/;
+TERNARY_EXPRESSION = COND_OR_EXPRESSION, ['?', TERNARY_EXPRESSION, ':', TERNARY_EXPRESSION, /makeTernary/];
+COND_OR_EXPRESSION = COND_AND_EXPRESSION, <'||', COND_AND_EXPRESSION, /makeCondOr/>;
+COND_AND_EXPRESSION = BIT_OR_EXPRESSION, <'&&', BIT_OR_EXPRESSION, /makeCondAnd/>;
+BIT_OR_EXPRESSION = BIT_XOR_EXPRESSION, <'|', BIT_XOR_EXPRESSION, /makeBitOr/>;
+BIT_XOR_EXPRESSION = BIT_AND_EXPRESSION, <'^', BIT_AND_EXPRESSION, /makeBitXor/>;
+BIT_AND_EXPRESSION = EQUALITY_EXPRESSION, <'&', EQUALITY_EXPRESSION, /makeBitAnd/>;
+EQUALITY_EXPRESSION = RELATIONAL_EXPRESSION, <_EQUALITY_OPERATOR@a, RELATIONAL_EXPRESSION, /makeEquality&a/>;
+_EQUALITY_OPERATOR = '==' | '!=';
+RELATIONAL_EXPRESSION = SHIFT_EXPRESSION, <_RELATIONAL_OPERATOR@a, _RELATIONAL_COMBINATION_EXPRESSION,
+						/makeRelational&a/>;
+_RELATIONAL_OPERATOR = '<' | '<=' | '>' | '>=' | 'instanceof';
+_RELATIONAL_COMBINATION_EXPRESSION = SHIFT_EXPRESSION | ( /start/, _ARGUMENT_LIST),
+										/makeExpressionList/);
+SHIFT_EXPRESSION = ADDITIVE_EXPRESSION, <_SHIFT_OPERATOR@a, ADDITIVE_EXPRESSION, /makeShift&a/>;
+_SHIFT_OPERATOR = '<<' | '>>' | '>>>';
+ADDITIVE_EXPRESSION = MULTIPLICATIVE_EXPRESSION, <_ADDITIVE_OPERATOR@a, MULTIPLICATIVE_EXPRESSION, /makeAdd&a/>;
+_ADDITIVE_OPERATOR = '+' | '-';
+MULTIPLICATIVE_EXPRESSION = CAST_EXPRESSION, <_MULTIPLICATIVE_OPERATOR@a, CAST_EXPRESSION, /makeMult&a/>;
+_MULTIPLICATIVE_OPERATOR = '*' | '/' | '%';
+CAST_EXPRESSION = /start/, <'(', TYPE, ')'>, PRE_EXPRESSION, /makeCast/;
+PRE_EXPRESSION = /start/, <_PRE_OPERATOR@a, /&a/>, POST_EXPRESSION, /makePreOp/;
+_PRE_OPERATOR = '++' | '--' | '+' | '-' | '!' | '~';
+POST_EXPRESSION = INNER_EXPRESSION, <_POST_OPERATION, /makePost/>;
+_POST_OPERATION = _ARRAY_ACCESS | _MEMBER_ACCESS | _METHOD_CALL | ('++'@a, /&a/) | ('--'@b, /&b/);
+_ARRAY_ACCESS = /start/, '[', ['*'], _ARRAY_ACCESS_INTERVAL, <',', _ARRAY_ACCESS_INTERVAL>, ']', /makeArrayAccess/;
+_ARRAY_ACCESS_INTERVAL = /start/, [EXPRESSION], [':', [EXPRESSION]], [':', [EXPRESSION]], /makeArrayAccessInt/;
+_MEMBER_ACCESS = '.', $ID, /makeMemberAccess/;
+_METHOD_CALL = (_GENERIC_TYPE_MODIFIER) | //, _ARGUMENT_LIST, /makeMethodCall/;
+_ARGUMENT_LIST = '(', [EXPRESSION, <',', EXPRESSION], ')', /makeArgumentList/;
+INNER_EXPRESSION = PARENED_EXPRESSION | $ID | NEW_OBJECT;
+NEW_OBJECT = 'new', TYPE, PARAMETER_LIST, /makeNewObject/

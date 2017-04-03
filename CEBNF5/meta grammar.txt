@@ -1,0 +1,16 @@
+INPUT = {LINE};
+LINE = $identifier, '=', LIST, /line/ ';';
+LIST = /startList/, ITEM, <',', ITEM>, /endList/;
+ITEM = /startOr/ GROUP, <'|', GROUP>, /endOr/;
+GROUP = ZO_GROUP | O_GROUP | ZP_GROUP | OP_GROUP | CODE_GROUP | $pre_def | $token | $identifier | %SQ_STRING, ['@', $identifier]
+ZO_GROUP = '[', LIST, ']', /ZO/;
+O_GROUP = '(', LIST, ')', /O/;
+ZP_GROUP = '<', LIST, '>', /ZP/;
+OP_GROUP = '{', LIST, '}', /OP/;
+CODE_GROUP = '/', /startCodeGroup/, $output, /endCodeGroup/, '/';
+
+
+/*
+INTEGER, DECIMAL, DIGIT, SQ_STRING, DQ_STRING, STRING, SQ_CHAR_STRING, DQ_CHAR_STRING, CHAR_STRING, LC_LETTER, UC_LETTER, LETTER,
+ANY_CHAR, PRINTING_CHAR, WHITE_SPACE, LINE_COMMENT, BLOCK_COMMENT
+*/
