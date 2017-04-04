@@ -2,7 +2,7 @@
 A general compiler that converts code to postfix notation given its grammatical structure document.
 By Nikhil Singhal
 
-  This program is a compiler that can convert code from strictly defined languages into postfix notation so that it can be easily run or simplified. It allows a user to specify a grammar file in "CEBNF" notation, a modified version of Extended Bacchus Nauer Form (EBNF) that also includes instructions about its postfix notation, and a file containing code. It then parses the code using the grammar file and outputs the postfix representation.
+  This program is a compiler that can convert code from strictly defined languages into postfix notation so that it can be easily run or simplified. It allows a user to specify a grammar file in "CEBNF" notation, a modified version of Extended Backus Nauer Form (EBNF) that also includes instructions about its postfix notation, and a file containing code. It then parses the code using the grammar file and outputs the postfix representation.
 
 Directions for sample program:
   To run a sample program, add the entire CEBNF5 folder as a project in Eclipse or compile the src folder yourself. BitInterpreter.java contains the main method that will automatically interpret and run a program to add 2 inputted bits in the language BIT (http://www.dangermouse.net/esoteric/bit.html).
@@ -29,6 +29,17 @@ All groups will match greedily (matching as much as possible without falsely mat
 
 where TEXT is a string to print in the postfix notation in the same place in its order as this group is. Any constants can also be configured to print to the post fix notation, not print to post fix notation, or be completely ignored (and thus not need to be considered in this grammar file).
 
-CODE_GROUPs can also contain REFERENCEs inside TEXT. REFERENCEs are of the form &name or #name where name is a lowercase term name. &name will paste the value saved as (name) into the TEXT, while #name will paste the number of children or number of loop passes in the outermost item of (name). #name is not yet functional, but is not necessary for the use of this system. To save values to (name), any OTHER can be followed by @name, in which case the OTHER's value and number of children/passes in the OTHER.
+CODE_GROUPs can also contain REFERENCEs inside TEXT. REFERENCEs are of the form &name or #name where name is a lowercase term name. &name will paste the value saved as (name) into the TEXT, while #name will paste the number of children or number of loop passes in the outermost item of (name). #name is not yet functional, but its unavailability only limits the efficiency, not usefulness, of this system. To save values to (name), any OTHER can be followed by @name, in which case the OTHER's value and number of children/passes in the OTHER. Saving a value will work even if the ITEM is set to not print.
 
-// add part about token generator and actually running the metaparser
+
+Running the compiler:
+  To run the compiler, first create a new TokenGenerator with the empty constructor. Then use the registerRules(...) method to add regular expressions with names to the token generator. The names can be referenced in the grammar file through PREDEFINED_TERMs. Alternatively, predefined names can be inputted, and these names will automatically register predefined regular expressions (including INTEGER, DECIMAL, DIGIT, SQ_STRING, DQ_STRING, SQ_CHAR_STRING, DQ_CHAR_STRING, CHAR_STRING, LC_LETTER, UC_LETTER, LETTER, ANY_CHAR, PRINTING_CHAR, WHITE_SPACE, LINE_COMMENT, BLOCK_COMMENT). RegisterRules() also sets whether the given regular expression is ignored (thrown out after token matching) or otherwise if it is printed (outputted to postfix notation under standard circumstances). Various versions of registerRules() exist for ease of use. RegisterStandardRules() can be used to condense rule adding for similarly formatted rules. Rules are checked in the order they are added, and match and create tokens greedily. All characters that can legally appear in the code must be accounted for in tokens that match the inputted rules.
+  Then, create a MetaParser with the TokenGenerator as input to the constructor and call
+
+metaParser.parseGrammar(file)
+
+  where file is the text of the grammar file. This fills the MetaParser's internal HashMap with a representation of the grammar file. Then run
+
+metaParser.parseCode(code).toString()
+
+  where code is the text of the code file to compile using the grammar. This returns a comma separated postfix notation string representing the code in the given file using the format specified in the grammar. This output can then be handled in the interpreter fairly mechanically by using a stack to produce the desired results.
