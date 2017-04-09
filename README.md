@@ -5,7 +5,12 @@ By Nikhil Singhal
   This program is a compiler that can convert code from strictly defined languages into postfix notation so that it can be easily run or simplified. It allows a user to specify a grammar file in "CEBNF" notation, a modified version of Extended Backus Nauer Form (EBNF) that also includes instructions about its postfix notation, and a file containing code. It then parses the code using the grammar file and outputs the postfix representation.
 
 Directions for sample program:
-  To run a sample program, add the entire CEBNF5 folder as a project in Eclipse or compile the src folder yourself. BitInterpreter.java contains the main method that will automatically interpret and run a program to add 2 inputted bits in the language BIT (http://www.dangermouse.net/esoteric/bit.html).
+  To run a sample program, add the entire CEBNF5 folder as a project in Eclipse or compile the src folder yourself. BitInterpreter.java contains the main method that will use the general compiler with the grammatical structure for BIT (http://www.dangermouse.net/esoteric/bit.html) stored in the file named BIT to parse and run the program in the file BITCODE, which takes in two bits (either "ONE" or "ZERO") and outputs their sum.
+
+
+
+To understand more about the specifications of the compiler inputs, continue reading below:
+
   
 Grammar file:
   The grammar file must be in CEBNF notation. Each line defines a single term that will match some part of the input file, and is delimited by a semicolon. Java-style comments and whitespace are ignored. The grammar file must contain a line defining a term called INPUT, which will be used to match the entire input file. Lines are constructed as follows:
